@@ -50,4 +50,7 @@ uploads/
 *.pkl
 *.joblib
 *.h5
-*.model
+*.model"myvenv/" 
+"venv/" 
+".venv/" 
+"env/" 
