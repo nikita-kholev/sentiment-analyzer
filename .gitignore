@@ -54,3 +54,4 @@ uploads/
 "venv/" 
 ".venv/" 
 "env/" 
+"myvenv/" 
