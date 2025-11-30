@@ -91,7 +91,7 @@ class AdvancedSentimentAnalyzer:
             
         return False
 
-    def create_advanced_features(self, texts: List[str]) -> np.ndarray:
+    def create_advanced_features(self, texts: list[str]) -> np.ndarray:
         features = []
         
         for text in texts:
