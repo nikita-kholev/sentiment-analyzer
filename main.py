@@ -128,7 +128,7 @@ class AdvancedSentimentAnalyzer:
         
         return np.array(features)
 
-    def train_advanced_model(self, texts: List[str], labels: List[int]) -> Dict[str, Any]:
+    def train_advanced_model(self, texts: list[str], labels: list[int]) -> dict[str, any]:
         logger.info("Запуск оптимизированного обучения с 4 лучшими алгоритмами...")
         
         try:
@@ -246,7 +246,7 @@ class AdvancedSentimentAnalyzer:
             logger.error(f"Ошибка обучения: {str(e)}")
             return {'success': False, 'error': str(e)}
 
-    def predict_with_noise_handling(self, texts: List[str]) -> List[Dict[str, Any]]:
+    def predict_with_noise_handling(self, texts: list[str]) -> list[dict[str, any]]:
         if not self.is_trained:
             raise ValueError("Модель не обучена")
         
