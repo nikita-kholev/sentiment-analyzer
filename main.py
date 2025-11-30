@@ -7,21 +7,16 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_val_score, StratifiedKFold, train_test_split
-from sklearn.metrics import f1_score, classification_report
+from sklearn.metrics import f1_score
 from sklearn.calibration import CalibratedClassifierCV
 from scipy import sparse
 import re
 import io
-import joblib
-from typing import List, Dict, Any
 import logging
 import time
-import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -134,7 +129,7 @@ class AdvancedSentimentAnalyzer:
         return np.array(features)
 
     def train_advanced_model(self, texts: List[str], labels: List[int]) -> Dict[str, Any]:
-        logger.info("Запуск расширенного обучения с 6 алгоритмами...")
+        logger.info("Запуск оптимизированного обучения с 4 лучшими алгоритмами...")
         
         try:
             self.vectorizer = TfidfVectorizer(
@@ -150,29 +145,8 @@ class AdvancedSentimentAnalyzer:
             X_advanced = self.create_advanced_features(texts)
             X_combined = sparse.hstack([X_tfidf, sparse.csr_matrix(X_advanced)])
             
+            # Оставляем только 4 лучшие модели на основе предыдущих результатов
             models = {
-                'logistic_l2': LogisticRegression(
-                    C=0.8,
-                    solver='liblinear',
-                    max_iter=2000,
-                    random_state=42,
-                    class_weight='balanced'
-                ),
-                'logistic_l1': LogisticRegression(
-                    C=0.5,
-                    solver='liblinear',
-                    penalty='l1',
-                    max_iter=2000,
-                    random_state=42,
-                    class_weight='balanced'
-                ),
-                'linearsvc': LinearSVC(
-                    C=0.3,
-                    dual=False,
-                    max_iter=3000,
-                    random_state=42,
-                    class_weight='balanced'
-                ),
                 'random_forest': RandomForestClassifier(
                     n_estimators=200,
                     max_depth=25,
@@ -187,6 +161,13 @@ class AdvancedSentimentAnalyzer:
                     max_depth=10,
                     learning_rate=0.1,
                     random_state=42
+                ),
+                'logistic_l2': LogisticRegression(
+                    C=0.8,
+                    solver='liblinear',
+                    max_iter=2000,
+                    random_state=42,
+                    class_weight='balanced'
                 ),
                 'naive_bayes': MultinomialNB(alpha=0.1)
             }
@@ -381,7 +362,7 @@ def create_enhanced_sample_data():
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Загрузка и обучение улучшенной модели...")
+    logger.info("Загрузка и обучение оптимизированной модели...")
     
     sample_texts, sample_labels = create_enhanced_sample_data()
     training_result = analyzer.train_advanced_model(sample_texts, sample_labels)
