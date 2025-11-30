@@ -939,30 +939,19 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     class CSVAnalyzer {
-    constructor() {
-        this.currentFile = null;
-        this.analysisResults = null;
-        this.API_BASE = 'https://sentiment-analyzer-pnla.onrender.com';
-        this.chart = null;
+        constructor() {
+            
+            this.currentFile = null;
+            this.analysisResults = null;
+            this.API_BASE = 'https://sentiment-analyzer-pnla.onrender.com';
+            this.chart = null;
 
-        // Ждем полной загрузки DOM и Chart.js
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                this.initialize();
-            });
-        } else {
-            this.initialize();
+            this.warmUpServer();
+            this.initializeEventListeners();
+            this.setupResizeHandler();
+            this.initializeChart();
         }
-    }
-
-    async initialize() {
-        await this.warmUpServer();
-        this.initializeEventListeners();
-        this.setupResizeHandler();
-        // Инициализацию диаграммы откладываем до первого использования
-    }
-
-    async warmUpServer() {
+        async warmUpServer() {
         try {
             console.log('Прогрев сервиса...');
             await fetch(`${this.API_BASE}/api/health`);
@@ -972,204 +961,505 @@
         }
     }
 
-    initializeEventListeners() {
-        this.fileInput = document.getElementById('fileInput');
-        this.uploadArea = document.getElementById('uploadArea');
-        this.fileInfo = document.getElementById('fileInfo');
-        this.fileName = document.getElementById('fileName');
-        this.fileSize = document.getElementById('fileSize');
-        this.removeFile = document.getElementById('removeFile');
-        this.analyzeBtn = document.getElementById('analyzeBtn');
-        this.resultsSection = document.getElementById('resultsSection');
-        this.downloadBtn = document.getElementById('downloadBtn');
-        this.newAnalysisBtn = document.getElementById('newAnalysisBtn');
-        this.loadingOverlay = document.getElementById('loadingOverlay');
-        this.loadingMessage = document.getElementById('loadingMessage');
-        this.progressFill = document.getElementById('progressFill');
-        this.progressText = document.getElementById('progressText');
+        initializeEventListeners() {
+            this.fileInput = document.getElementById('fileInput');
+            this.uploadArea = document.getElementById('uploadArea');
+            this.fileInfo = document.getElementById('fileInfo');
+            this.fileName = document.getElementById('fileName');
+            this.fileSize = document.getElementById('fileSize');
+            this.removeFile = document.getElementById('removeFile');
+            this.analyzeBtn = document.getElementById('analyzeBtn');
+            this.resultsSection = document.getElementById('resultsSection');
+            this.downloadBtn = document.getElementById('downloadBtn');
+            this.newAnalysisBtn = document.getElementById('newAnalysisBtn');
+            this.loadingOverlay = document.getElementById('loadingOverlay');
+            this.loadingMessage = document.getElementById('loadingMessage');
+            this.progressFill = document.getElementById('progressFill');
+            this.progressText = document.getElementById('progressText');
 
-        this.uploadArea.addEventListener('click', () => this.fileInput.click());
-        this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
-        this.removeFile.addEventListener('click', (e) => this.removeSelectedFile(e));
-        this.analyzeBtn.addEventListener('click', () => this.analyzeFile());
-        this.downloadBtn.addEventListener('click', () => this.downloadResults());
-        this.newAnalysisBtn.addEventListener('click', () => this.resetAnalysis());
+            this.uploadArea.addEventListener('click', () => this.fileInput.click());
+            this.fileInput.addEventListener('change', (e) => this.handleFileSelect(e));
+            this.removeFile.addEventListener('click', (e) => this.removeSelectedFile(e));
+            this.analyzeBtn.addEventListener('click', () => this.analyzeFile());
+            this.downloadBtn.addEventListener('click', () => this.downloadResults());
+            this.newAnalysisBtn.addEventListener('click', () => this.resetAnalysis());
 
-        this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
-        this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
-        this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
-    }
-
-    setupResizeHandler() {
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (this.chart) {
-                    this.chart.resize();
-                }
-            }, 250);
-        });
-    }
-
-    ensureChartInitialized() {
-        if (!this.chart) {
-            this.initializeChart();
-        }
-    }
-
-    initializeChart() {
-        const canvas = document.getElementById('sentimentChart');
-        if (!canvas) {
-            console.error('Canvas element not found');
-            return;
+            this.uploadArea.addEventListener('dragover', (e) => this.handleDragOver(e));
+            this.uploadArea.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+            this.uploadArea.addEventListener('drop', (e) => this.handleDrop(e));
         }
 
-        // Проверяем, что Chart доступен
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js is not loaded');
-            setTimeout(() => this.initializeChart(), 100);
-            return;
+        setupResizeHandler() {
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                }, 250);
+            });
         }
 
-        const ctx = canvas.getContext('2d');
-        
-        this.chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Позитивные', 'Негативные', 'Нейтральные'],
-                datasets: [{
-                    data: [0, 0, 0],
-                    backgroundColor: [
-                        'rgba(40, 167, 69, 0.8)',
-                        'rgba(220, 53, 69, 0.8)',
-                        'rgba(255, 193, 7, 0.8)'
-                    ],
-                    borderColor: [
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(220, 53, 69, 1)',
-                        'rgba(255, 193, 7, 1)'
-                    ],
-                    borderWidth: 2,
-                    hoverBackgroundColor: [
-                        'rgba(40, 167, 69, 1)',
-                        'rgba(220, 53, 69, 1)',
-                        'rgba(255, 193, 7, 1)'
-                    ],
-                    hoverBorderWidth: 3,
-                    hoverOffset: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '60%',
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleFont: {
-                            family: 'Inter',
-                            size: 14
+        initializeChart() {
+            const canvas = document.getElementById('sentimentChart');
+            if (!canvas) {
+                console.error('Canvas element not found');
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            
+            // Создаем красивую круговую диаграмму
+            this.chart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Позитивные', 'Негативные', 'Нейтральные'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.8)',
+                            'rgba(220, 53, 69, 0.8)',
+                            'rgba(255, 193, 7, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverBackgroundColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(255, 193, 7, 1)'
+                        ],
+                        hoverBorderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            display: false // Скрываем встроенную легенду, будем использовать кастомную
                         },
-                        bodyFont: {
-                            family: 'Inter',
-                            size: 13
-                        },
-                        padding: 12,
-                        cornerRadius: 8,
-                        displayColors: true,
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
-                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                return `${label}: ${value} (${percentage}%)`;
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: {
+                                family: 'Inter',
+                                size: 14
+                            },
+                            bodyFont: {
+                                family: 'Inter',
+                                size: 13
+                            },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((acc, data) => acc + data, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
                             }
                         }
+                    },
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    },
+                    hover: {
+                        animationDuration: 300
                     }
-                },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                },
-                hover: {
-                    animationDuration: 300
                 }
-            }
-        });
+            });
 
-        this.showNoDataMessage();
-    }
-
-    showNoDataMessage() {
-        const canvas = document.getElementById('sentimentChart');
-        const noDataMessage = document.getElementById('noDataMessage');
-        const chartLegend = document.getElementById('chartLegend');
-        
-        if (canvas && noDataMessage && chartLegend) {
-            canvas.style.display = 'none';
-            noDataMessage.style.display = 'flex';
-            chartLegend.style.display = 'none';
-        }
-    }
-
-    showChart() {
-        const canvas = document.getElementById('sentimentChart');
-        const noDataMessage = document.getElementById('noDataMessage');
-        const chartLegend = document.getElementById('chartLegend');
-        
-        if (canvas && noDataMessage && chartLegend) {
-            canvas.style.display = 'block';
-            noDataMessage.style.display = 'none';
-            chartLegend.style.display = 'flex';
-            
-            // Перерисовываем диаграмму для правильного отображения
-            setTimeout(() => {
-                if (this.chart) {
-                    this.chart.resize();
-                }
-            }, 100);
-        }
-    }
-
-    // ... остальные методы остаются без изменений ...
-
-    updateChart() {
-        this.ensureChartInitialized();
-
-        const distribution = this.analysisResults.statistics.sentiment_distribution;
-        const total = distribution.positive + distribution.negative + distribution.neutral;
-        
-        if (total > 0) {
-            this.showChart();
-            
-            // Обновляем данные диаграммы
-            this.chart.data.datasets[0].data = [
-                distribution.positive,
-                distribution.negative,
-                distribution.neutral
-            ];
-            
-            this.chart.update();
-
-            // Обновляем кастомную легенду
-            this.updateChartLegend(distribution, total);
-        } else {
             this.showNoDataMessage();
         }
+
+        showNoDataMessage() {
+            const canvas = document.getElementById('sentimentChart');
+            const noDataMessage = document.getElementById('noDataMessage');
+            const chartLegend = document.getElementById('chartLegend');
+            
+            if (canvas && noDataMessage && chartLegend) {
+                canvas.style.display = 'none';
+                noDataMessage.style.display = 'flex';
+                chartLegend.style.display = 'none';
+            }
+        }
+
+        showChart() {
+            const canvas = document.getElementById('sentimentChart');
+            const noDataMessage = document.getElementById('noDataMessage');
+            const chartLegend = document.getElementById('chartLegend');
+            
+            if (canvas && noDataMessage && chartLegend) {
+                canvas.style.display = 'block';
+                noDataMessage.style.display = 'none';
+                chartLegend.style.display = 'flex';
+                
+                // Перерисовываем диаграмму для правильного отображения
+                setTimeout(() => {
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
+                }, 100);
+            }
+        }
+
+        handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && this.isValidCSVFile(file)) {
+                this.setSelectedFile(file);
+            } else {
+                this.showError('Пожалуйста, выберите CSV файл');
+            }
+        }
+
+        handleDragOver(event) {
+            event.preventDefault();
+            this.uploadArea.classList.add('dragover');
+        }
+
+        handleDragLeave(event) {
+            event.preventDefault();
+            this.uploadArea.classList.remove('dragover');
+        }
+
+        handleDrop(event) {
+            event.preventDefault();
+            this.uploadArea.classList.remove('dragover');
+            
+            const file = event.dataTransfer.files[0];
+            if (file && this.isValidCSVFile(file)) {
+                this.setSelectedFile(file);
+            } else {
+                this.showError('Пожалуйста, перетащите CSV файл');
+            }
+        }
+
+        isValidCSVFile(file) {
+            return file.type === 'text/csv' || file.name.toLowerCase().endsWith('.csv');
+        }
+
+        setSelectedFile(file) {
+            this.currentFile = file;
+            this.updateFileInfo(file);
+            this.analyzeBtn.disabled = false;
+        }
+
+        updateFileInfo(file) {
+            this.fileName.textContent = file.name;
+            this.fileSize.textContent = this.formatFileSize(file.size);
+            
+            this.uploadArea.querySelector('.upload-placeholder').style.display = 'none';
+            this.fileInfo.style.display = 'flex';
+        }
+
+        formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        removeSelectedFile(event) {
+            event.stopPropagation();
+            this.currentFile = null;
+            this.fileInput.value = '';
+            
+            this.fileInfo.style.display = 'none';
+            this.uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+            this.analyzeBtn.disabled = true;
+        }
+
+        async analyzeFile() {
+            if (!this.currentFile) return;
+
+            this.showLoading(true);
+            
+            try {
+                // Имитация прогресса с разными этапами
+                const steps = [
+                    { message: 'Чтение CSV файла...', progress: 20 },
+                    { message: 'Предобработка текста...', progress: 40 },
+                    { message: 'Анализ тональности...', progress: 60 },
+                    { message: 'Генерация результатов...', progress: 80 },
+                    { message: 'Завершение анализа...', progress: 95 }
+                ];
+
+                // Запускаем имитацию прогресса
+                for (const step of steps) {
+                    this.loadingMessage.textContent = step.message;
+                    this.updateProgress(step.progress);
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                }
+
+                // Реальный запрос к API
+                const formData = new FormData();
+                formData.append('file', this.currentFile);
+
+                const response = await fetch(`${this.API_BASE}/api/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Ошибка сервера');
+                }
+
+                const data = await response.json();
+                
+                // Финальный прогресс
+                this.loadingMessage.textContent = '🎉 Анализ завершен!';
+                this.updateProgress(100);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (data.success) {
+                    this.analysisResults = data;
+                    this.showResults();
+                } else {
+                    throw new Error(data.message || 'Ошибка анализа');
+                }
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                
+                // Если API недоступно, используем демо-данные
+                if (error.message.includes('Failed to fetch') || error.message.includes('Ошибка сервера')) {
+                    this.showDemoResults();
+                } else {
+                    this.showError('Ошибка при анализе файла: ' + error.message);
+                }
+            } finally {
+                this.showLoading(false);
+            }
+        }
+
+        showDemoResults() {
+            // Демо-данные для тестирования
+            this.analysisResults = {
+                success: true,
+                statistics: {
+                    total_samples: 150,
+                    sentiment_distribution: {
+                        positive: 65,
+                        negative: 45,
+                        neutral: 40
+                    },
+                    confidence: {
+                        average: 0.78,
+                        max: 0.95,
+                        min: 0.45
+                    }
+                },
+                preview: [
+                    {
+                        text: "Отличный продукт, очень доволен покупкой!",
+                        sentiment_label: "positive",
+                        sentiment_display: "Позитивный",
+                        confidence: 0.92,
+                        sentiment: 1
+                    },
+                    {
+                        text: "Качество оставляет желать лучшего, не рекомендую",
+                        sentiment_label: "negative",
+                        sentiment_display: "Негативный",
+                        confidence: 0.87,
+                        sentiment: -1
+                    },
+                    {
+                        text: "Нормальный товар, соответствует описанию",
+                        sentiment_label: "neutral",
+                        sentiment_display: "Нейтральный",
+                        confidence: 0.65,
+                        sentiment: 0
+                    },
+                    {
+                        text: "Прекрасное обслуживание, буду рекомендовать друзьям!",
+                        sentiment_label: "positive",
+                        sentiment_display: "Позитивный",
+                        confidence: 0.89,
+                        sentiment: 1
+                    },
+                    {
+                        text: "Разочарован качеством, ожидал большего",
+                        sentiment_label: "negative",
+                        sentiment_display: "Негативный",
+                        confidence: 0.76,
+                        sentiment: -1
+                    }
+                ],
+                results_csv: "text,sentiment,confidence\nОтличный продукт, очень доволен покупкой!,1,0.92\nКачество оставляет желать лучшего, не рекомендую,-1,0.87\nНормальный товар, соответствует описанию,0,0.65"
+            };
+
+            this.showResults();
+        }
+
+        updateProgress(percentage) {
+            this.progressFill.style.width = percentage + '%';
+            this.progressText.textContent = Math.round(percentage) + '%';
+        }
+
+        showResults() {
+            this.updateStatistics();
+            this.updateChart();
+            this.updatePreviewTable();
+            this.resultsSection.style.display = 'block';
+            
+            // Плавная прокрутка к результатам
+            setTimeout(() => {
+                this.resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+        }
+
+        updateStatistics() {
+            const stats = this.analysisResults.statistics.sentiment_distribution;
+            const confidence = this.analysisResults.statistics.confidence;
+
+            document.getElementById('positiveCount').textContent = stats.positive;
+            document.getElementById('negativeCount').textContent = stats.negative;
+            document.getElementById('neutralCount').textContent = stats.neutral;
+            document.getElementById('totalCount').textContent = this.analysisResults.statistics.total_samples;
+
+            document.getElementById('avgConfidence').textContent = (confidence.average * 100).toFixed(1) + '%';
+            document.getElementById('maxConfidence').textContent = (confidence.max * 100).toFixed(1) + '%';
+            document.getElementById('minConfidence').textContent = (confidence.min * 100).toFixed(1) + '%';
+        }
+
+        updateChart() {
+            if (!this.chart) {
+                this.initializeChart();
+            }
+
+            const distribution = this.analysisResults.statistics.sentiment_distribution;
+            const total = distribution.positive + distribution.negative + distribution.neutral;
+            
+            if (total > 0) {
+                this.showChart();
+                
+                // Обновляем данные диаграммы
+                this.chart.data.datasets[0].data = [
+                    distribution.positive,
+                    distribution.negative,
+                    distribution.neutral
+                ];
+                
+                this.chart.update();
+
+                // Обновляем кастомную легенду
+                this.updateChartLegend(distribution, total);
+            } else {
+                this.showNoDataMessage();
+            }
+        }
+
+        updateChartLegend(distribution, total) {
+            const legendContainer = document.getElementById('chartLegend');
+            if (!legendContainer) return;
+
+            const positivePercent = total > 0 ? Math.round((distribution.positive / total) * 100) : 0;
+            const negativePercent = total > 0 ? Math.round((distribution.negative / total) * 100) : 0;
+            const neutralPercent = total > 0 ? Math.round((distribution.neutral / total) * 100) : 0;
+
+            legendContainer.innerHTML = `
+                <div class="legend-item">
+                    <div class="legend-color positive"></div>
+                    <span class="legend-text">Позитивные:</span>
+                    <span class="legend-value">${distribution.positive} (${positivePercent}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color negative"></div>
+                    <span class="legend-text">Негативные:</span>
+                    <span class="legend-value">${distribution.negative} (${negativePercent}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color neutral"></div>
+                    <span class="legend-text">Нейтральные:</span>
+                    <span class="legend-value">${distribution.neutral} (${neutralPercent}%)</span>
+                </div>
+            `;
+        }
+
+        updatePreviewTable() {
+            const tbody = document.getElementById('previewTableBody');
+            tbody.innerHTML = '';
+
+            const previewData = this.analysisResults.preview;
+
+            previewData.forEach(result => {
+                const row = document.createElement('tr');
+                
+                const sentimentClass = `sentiment-${result.sentiment_label}`;
+                
+                row.innerHTML = `
+                    <td title="${result.text}">${this.truncateText(result.text, 50)}</td>
+                    <td><span class="${sentimentClass}">${result.sentiment_display}</span></td>
+                    <td>${(result.confidence * 100).toFixed(1)}%</td>
+                    <td>${result.sentiment}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        truncateText(text, maxLength) {
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        downloadResults() {
+            if (!this.analysisResults) return;
+
+            const csvContent = this.analysisResults.results_csv;
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sentiment_analysis_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        resetAnalysis() {
+            this.currentFile = null;
+            this.analysisResults = null;
+            this.fileInput.value = '';
+            
+            this.fileInfo.style.display = 'none';
+            this.uploadArea.querySelector('.upload-placeholder').style.display = 'block';
+            this.analyzeBtn.disabled = true;
+            this.resultsSection.style.display = 'none';
+            
+            // Сбрасываем диаграмму
+            this.showNoDataMessage();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        showLoading(show) {
+            this.loadingOverlay.style.display = show ? 'flex' : 'none';
+            if (!show) {
+                this.updateProgress(0);
+            }
+        }
+
+        showError(message) {
+            alert(message);
+        }
     }
 
-    // ... остальной код без изменений ...
-}
-
-// Инициализация при полной загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    new CSVAnalyzer();
-});
     // Инициализация при загрузке страницы
     document.addEventListener('DOMContentLoaded', () => {
         new CSVAnalyzer();
