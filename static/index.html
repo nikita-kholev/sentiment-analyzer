@@ -836,7 +836,7 @@
         constructor() {
             this.currentFile = null;
             this.analysisResults = null;
-            this.API_BASE = 'https://sentiment-analyzer-pnla.onrender.com';;
+            this.API_BASE = window.location.origin;
             
             this.initializeEventListeners();
             this.setupResizeHandler();
@@ -947,7 +947,7 @@
             this.analyzeBtn.disabled = true;
         }
 
-        async analyzeFile() {
+       async analyzeFile() {
             console.log('Analyze button clicked');
             console.log('API Base:', this.API_BASE);
             console.log('Current file:', this.currentFile);
@@ -956,42 +956,35 @@
             this.showLoading(true);
             
             try {
-                // Имитация прогресса с разными этапами
-                const steps = [
-                    { message: 'Чтение CSV файла...', progress: 20 },
-                    { message: 'Предобработка текста...', progress: 40 },
-                    { message: 'Анализ тональности...', progress: 60 },
-                    { message: 'Генерация результатов...', progress: 80 },
-                    { message: 'Завершение анализа...', progress: 95 }
-                ];
+                // БЫСТРАЯ имитация прогресса - УБРАЛ ДОЛГИЕ ТАЙМАУТЫ
+                this.loadingMessage.textContent = 'Отправка файла на анализ...';
+                this.updateProgress(30);
 
-                // Запускаем имитацию прогресса
-                for (const step of steps) {
-                    this.loadingMessage.textContent = step.message;
-                    this.updateProgress(step.progress);
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                }
-
-                // Реальный запрос к API
+                // СРАЗУ реальный запрос к API БЕЗ ожидания
                 const formData = new FormData();
                 formData.append('file', this.currentFile);
+
+                console.log('Sending request to:', `${this.API_BASE}/api/analyze`);
 
                 const response = await fetch(`${this.API_BASE}/api/analyze`, {
                     method: 'POST',
                     body: formData
                 });
 
+                console.log('Response status:', response.status);
+
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Ошибка сервера');
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('Success response:', data);
                 
                 // Финальный прогресс
-                this.loadingMessage.textContent = '🎉 Анализ завершен!';
+                this.loadingMessage.textContent = 'Анализ завершен!';
                 this.updateProgress(100);
-                await new Promise(resolve => setTimeout(resolve, 500));
 
                 if (data.success) {
                     this.analysisResults = data;
@@ -1001,13 +994,12 @@
                 }
                 
             } catch (error) {
-                console.error('Analysis error:', error);
+                console.error('Full analysis error:', error);
                 this.showError('Ошибка при анализе файла: ' + error.message);
             } finally {
                 this.showLoading(false);
             }
         }
-
         updateProgress(percentage) {
             this.progressFill.style.width = percentage + '%';
             this.progressText.textContent = Math.round(percentage) + '%';
