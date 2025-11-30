@@ -575,8 +575,8 @@
         .rainbow-icon img {
             border-radius: 15px;
             display: block;
-            width: 45px;
-            height: 70px;
+            width: 35px;
+            height: 55px;
             object-fit: contain;
         }
         
@@ -1133,15 +1133,22 @@
         }
 
         showResults() {
-            this.updateStatistics();
-            this.updatePreviewTable();
-            this.resultsSection.style.display = 'block';
+            console.log('🔍 Реальные данные от ML:', this.analysisResults);
+            
+            if (this.analysisResults && this.analysisResults.statistics) {
+                this.updateStatistics();
+                this.updatePreviewTable();
+                this.resultsSection.style.display = 'block';
 
-            // Небольшая задержка для стабилизации DOM
-            setTimeout(() => {
-                this.createChart();
-                this.resultsSection.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
+                // Небольшая задержка для стабилизации DOM
+                setTimeout(() => {
+                    this.createChart();
+                    this.resultsSection.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            } else {
+                console.error('❌ Нет данных!');
+                this.showError('Не удалось получить данные анализа');
+            }
         }
 
         updateStatistics() {
@@ -1192,7 +1199,9 @@
             // Очищаем canvas
             ctx.clearRect(0, 0, width, height);
             
+            // ИСПОЛЬЗУЕМ РЕАЛЬНЫЕ ДАННЫЕ ОТ ML МОДЕЛИ!
             const total = distribution.negative + distribution.neutral + distribution.positive;
+            
             if (total === 0) {
                 // Если нет данных, показываем сообщение
                 ctx.fillStyle = '#666';
@@ -1203,20 +1212,50 @@
                 return;
             }
             
-            const colors = ['#e74c3c', '#3498db', '#27ae60'];
+            // Улучшенная цветовая палитра
+            const colors = [
+                'rgba(231, 76, 60, 0.9)',   // Негативные - мягкий красный
+                'rgba(52, 152, 219, 0.9)',  // Нейтральные - мягкий синий  
+                'rgba(46, 204, 113, 0.9)'   // Позитивные - мягкий зеленый
+            ];
+            
             const labels = ['Негативные', 'Нейтральные', 'Позитивные'];
-            const values = [distribution.negative, distribution.neutral, distribution.positive];
+            
+            // ВАЖНО: используем реальные данные от ML модели!
+            const values = [
+                distribution.negative || 0,  // Реальные негативные отзывы
+                distribution.neutral || 0,   // Реальные нейтральные отзывы  
+                distribution.positive || 0   // Реальные позитивные отзывы
+            ];
+            
+            console.log('📊 Данные для диаграммы:', { values, total, distribution });
             
             // Адаптивный размер диаграммы
-            const radius = Math.min(width, height) * 0.3;
+            const radius = Math.min(width, height) * 0.35;
             const centerX = width / 2;
             const centerY = height / 2;
             
             let currentAngle = 0;
             
-            // Рисуем круговую диаграмму
+            // Тень для всего canvas
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            // Рисуем круговую диаграмму с эффектом "выпуклости"
             for (let i = 0; i < values.length; i++) {
+                if (values[i] === 0) continue; // Пропускаем нулевые значения
+                
                 const sliceAngle = (values[i] / total) * 2 * Math.PI;
+                
+                // Градиент для красивого цвета
+                const gradient = ctx.createRadialGradient(
+                    centerX, centerY, radius * 0.6,
+                    centerX, centerY, radius * 1.1
+                );
+                gradient.addColorStop(0, colors[i].replace('0.9', '1'));
+                gradient.addColorStop(1, colors[i]);
                 
                 // Сегмент диаграммы
                 ctx.beginPath();
@@ -1224,54 +1263,115 @@
                 ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
                 ctx.closePath();
                 
-                ctx.fillStyle = colors[i];
+                ctx.fillStyle = gradient;
                 ctx.fill();
                 
-                // Обводка
+                // Обводка с градиентом
                 ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.stroke();
                 
-                // Подписи
-                const labelAngle = currentAngle + sliceAngle / 2;
-                const labelRadius = radius * 1.2;
-                
-                // Позиционирование текста
-                const labelX = centerX + Math.cos(labelAngle) * labelRadius;
-                const labelY = centerY + Math.sin(labelAngle) * labelRadius;
-                
-                // Адаптивный размер шрифта
-                const baseFontSize = Math.min(width, height) * 0.03;
-                const fontSize = Math.max(10, baseFontSize);
-                
-                ctx.font = `500 ${fontSize}px Inter, sans-serif`;
-                ctx.fillStyle = '#333';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const percentage = Math.round((values[i] / total) * 100);
-                const labelText = `${values[i]} (${percentage}%)`;
-                
-                // Проверяем, помещается ли текст
-                const textWidth = ctx.measureText(labelText).width;
-                const maxTextWidth = radius * 1.5;
-                
-                if (textWidth <= maxTextWidth) {
-                    ctx.fillText(labelText, labelX, labelY);
-                } else {
-                    // Если текст не помещается, показываем только количество
-                    ctx.fillText(values[i].toString(), labelX, labelY);
-                }
+                // Эффект отделения сегментов
+                ctx.save();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius + 2, currentAngle, currentAngle + sliceAngle);
+                ctx.stroke();
+                ctx.restore();
                 
                 currentAngle += sliceAngle;
             }
             
-            // Центральная подпись
-            ctx.fillStyle = '#333';
-            ctx.font = `bold ${Math.max(12, Math.min(width, height) * 0.025)}px Inter, sans-serif`;
+            // Убираем тень для текста
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Второй проход для подписей
+            currentAngle = 0;
+            for (let i = 0; i < values.length; i++) {
+                if (values[i] === 0) {
+                    currentAngle += (values[i] / total) * 2 * Math.PI;
+                    continue; // Пропускаем нулевые значения
+                }
+                
+                const sliceAngle = (values[i] / total) * 2 * Math.PI;
+                
+                // Подписи с улучшенным позиционированием
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelRadius = radius * 1.35;
+                
+                const labelX = centerX + Math.cos(labelAngle) * labelRadius;
+                const labelY = centerY + Math.sin(labelAngle) * labelRadius;
+                
+                // Адаптивный размер шрифта
+                const baseFontSize = Math.min(width, height) * 0.028;
+                const fontSize = Math.max(10, baseFontSize);
+                
+                const percentage = Math.round((values[i] / total) * 100);
+                const labelText = `${labels[i]}: ${values[i].toLocaleString()} (${percentage}%)`;
+                
+                const textWidth = ctx.measureText(labelText).width;
+                const padding = 10;
+                const rectWidth = textWidth + padding * 2;
+                const rectHeight = fontSize + padding;
+                
+                // Фон для подписи
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                ctx.strokeStyle = colors[i];
+                ctx.lineWidth = 2;
+                
+                // Скругленный прямоугольник для подписи
+                this.drawRoundedRect(ctx, labelX - rectWidth / 2, labelY - rectHeight / 2, rectWidth, rectHeight, 8);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Текст подписи
+                ctx.font = `600 ${fontSize}px Inter, sans-serif`;
+                ctx.fillStyle = '#2c3e50';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(labelText, labelX, labelY);
+                
+                currentAngle += sliceAngle;
+            }
+            
+            // Центральная подпись с улучшенным дизайном
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 2;
+            
+            const centerRadius = radius * 0.5;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, centerRadius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Текст в центре
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = `bold ${Math.max(14, Math.min(width, height) * 0.03)}px Inter, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText(`Всего: ${total}`, centerX, centerY);
+            ctx.fillText(`Всего:`, centerX, centerY - 12);
+            
+            ctx.fillStyle = '#667eea';
+            ctx.font = `bold ${Math.max(18, Math.min(width, height) * 0.04)}px Inter, sans-serif`;
+            ctx.fillText(total.toLocaleString(), centerX, centerY + 15);
+        }
+
+        drawRoundedRect(ctx, x, y, width, height, radius) {
+            if (width < 2 * radius) radius = width / 2;
+            if (height < 2 * radius) radius = height / 2;
+            
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.arcTo(x + width, y, x + width, y + height, radius);
+            ctx.arcTo(x + width, y + height, x, y + height, radius);
+            ctx.arcTo(x, y + height, x, y, radius);
+            ctx.arcTo(x, y, x + width, y, radius);
+            ctx.closePath();
         }
 
         updateChartSize() {
