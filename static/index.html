@@ -836,7 +836,7 @@
         constructor() {
             this.currentFile = null;
             this.analysisResults = null;
-            this.API_BASE = 'http://localhost:8000';
+            this.API_BASE = 'https://sentiment-analyzer-pnla.onrender.com';;
             
             this.initializeEventListeners();
             this.setupResizeHandler();
@@ -948,6 +948,9 @@
         }
 
         async analyzeFile() {
+            console.log('Analyze button clicked');
+            console.log('API Base:', this.API_BASE);
+            console.log('Current file:', this.currentFile);
             if (!this.currentFile) return;
 
             this.showLoading(true);
