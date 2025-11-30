@@ -4,28 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CSV Analyzer - Анализ тональности отзывов</title>
-    
-    <!-- Preconnect для ускорения загрузки -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .fas::before {
+            font-family: Arial, sans-serif;
+        }
+        .fa-file-csv::before { content: "📊"; }
+        .fa-cloud-upload-alt::before { content: "📁"; }
+        .fa-times::before { content: "✕"; font-weight: bold; }
+        .fa-chart-line::before { content: "📈"; }
+        .fa-chart-bar::before { content: "📊"; }
+        .fa-download::before { content: "⤓"; }
+        .fa-redo::before { content: "↻"; }
+        .fa-play::before { content: "▶"; }
+        .fa-smile::before { content: "😊"; }
+        .fa-frown::before { content: "😞"; }
+        .fa-meh::before { content: "😐"; }
+        .fa-file-alt::before { content: "📄"; }
+        .fa-folder2-open::before { content: "📂"; }
+    </style>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
-            overflow-x: hidden;
         }
         
         .container {
@@ -35,7 +45,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            width: 100%;
         }
 
         .header {
@@ -73,8 +82,6 @@
             display: flex;
             flex-direction: column;
             gap: 30px;
-            opacity: 1;
-            transition: opacity 0.3s ease;
         }
 
         .upload-card {
@@ -83,10 +90,6 @@
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             text-align: center;
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
         .upload-icon {
@@ -115,10 +118,6 @@
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
-            min-height: 180px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .upload-area:hover {
@@ -156,7 +155,6 @@
             padding: 15px;
             border-radius: 10px;
             border: 1px solid #e9ecef;
-            min-height: 80px;
         }
 
         .file-info i {
@@ -196,6 +194,49 @@
             transform: scale(1.1); 
         }
 
+        .settings-section {
+            text-align: left;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .settings-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .setting-item label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .setting-item select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .setting-item select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
         .analyze-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -206,8 +247,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 600;
-            min-width: 200px;
-            align-self: center;
         }
 
         .analyze-btn:hover:not(:disabled) {
@@ -227,7 +266,6 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            min-height: 500px;
         }
 
         .results-header {
@@ -261,8 +299,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 160px;
-            justify-content: center;
         }
 
         .download-btn {
@@ -300,7 +336,6 @@
             align-items: center;
             gap: 15px;
             transition: transform 0.3s ease;
-            min-height: 120px;
         }
 
         .stat-card:hover {
@@ -315,7 +350,6 @@
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            flex-shrink: 0;
         }
 
         .stat-icon.positive {
@@ -355,29 +389,88 @@
             grid-template-columns: 2fr 1fr;
             gap: 30px;
             margin-bottom: 30px;
-            min-height: 350px;
         }
 
         .chart-container {
             background: #f8f9fa;
             padding: 25px;
             border-radius: 15px;
-            height: 300px;
+            height: 350px;
             position: relative;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        .chart-container canvas {
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chart-wrapper canvas {
             width: 100% !important;
             height: 100% !important;
             display: block;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .legend-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-color.positive {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .legend-color.negative {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+        }
+
+        .legend-color.neutral {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .legend-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .legend-value {
+            font-weight: 700;
+            color: #667eea;
         }
 
         .confidence-stats {
             background: #f8f9fa;
             padding: 25px;
             border-radius: 15px;
-            min-height: 300px;
         }
 
         .confidence-stats h4 {
@@ -407,7 +500,6 @@
             overflow-y: auto;
             border: 1px solid #e9ecef;
             border-radius: 10px;
-            min-height: 200px;
         }
 
         .preview-table {
@@ -446,7 +538,6 @@
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
         }
 
         .loading-content {
@@ -555,7 +646,6 @@
             border-radius: 4px;
             display: inline-block;
         }
-        
         .rainbow-icon {
             display: inline-block;
             padding: 1px;
@@ -575,11 +665,7 @@
         .rainbow-icon img {
             border-radius: 15px;
             display: block;
-            width: 45px;
-            height: 70px;
-            object-fit: contain;
         }
-        
         .remove-btn .fas.fa-times {
             color: #6f42c1;
             transition: color 0.3s ease;
@@ -592,10 +678,30 @@
 
         .remove-btn:hover {
             background: #f0e6ff;
-            transform: scale(1.05);
+         transform: scale(1.05);
         }
 
-        /* Улучшенная адаптивность */
+        .no-data-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            text-align: center;
+        }
+
+        .no-data-message i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .no-data-message p {
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -607,7 +713,10 @@
 
             .upload-card {
                 padding: 25px;
-                min-height: 350px;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
             }
 
             .stats-grid {
@@ -616,16 +725,19 @@
 
             .visualization {
                 grid-template-columns: 1fr;
-                gap: 20px;
             }
 
             .chart-container {
-                height: 250px;
+                height: 300px;
                 padding: 15px;
             }
 
-            .confidence-stats {
-                min-height: auto;
+            .chart-legend {
+                gap: 10px;
+            }
+
+            .legend-item {
+                padding: 4px 8px;
             }
 
             .results-header {
@@ -637,12 +749,6 @@
             .results-actions {
                 width: 100%;
                 justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .upload-area {
-                padding: 20px;
-                min-height: 150px;
             }
         }
 
@@ -652,27 +758,33 @@
             }
 
             .upload-area {
-                padding: 15px;
+                padding: 20px;
             }
 
             .chart-container {
-                height: 200px;
+                height: 250px;
                 padding: 10px;
             }
-            
-            .upload-card {
-                padding: 20px;
-            }
-            
-            .results-card {
-                padding: 20px;
+
+            .chart-legend {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
             }
         }
-
-        /* Стили для предотвращения скачков контента */
-        .content-loaded {
-            opacity: 1 !important;
-            visibility: visible !important;
+        .simple-csv-icon {
+            width: 60px;
+            height: 60px;
+            background: #f8f9fa;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -686,12 +798,12 @@
             <p class="subtitle">Анализ тональности текстовых отзывов</p>
         </header>
 
-        <main class="main-content" id="mainContent">
+        <main class="main-content">
             <section class="upload-section">
                 <div class="upload-card">
                     <div class="upload-icon">
                         <div class="rainbow-icon">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA0NSA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjcwIiByeD0iOCIgZmlsbD0iIzY2N2VlYSIvPgo8dGV4dCB4PSIyMi41IiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCI+Q1NWPC90ZXh0Pgo8L3N2Zz4K" alt="CSV" width="45" height="70" loading="lazy">
+                            <div class="simple-csv-icon">📊 CSV</div>
                         </div>
                     </div>
                     <h2>Загрузите CSV файл для анализа</h2>
@@ -706,12 +818,7 @@
                             <small>Поддерживаются только CSV файлы</small>
                         </div>
                         <div class="file-info" id="fileInfo" style="display: none;">
-                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDUiIGhlaWdodD0iNzAiIHZpZXdCb3g9IjAgMCA0NSA3MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ1IiBoZWlnaHQ9IjcwIiByeD0iOCIgZmlsbD0iIzY2N2VlYSIvPgo8dGV4dCB4PSIyMi41IiB5PSIzNSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCI+Q1NWPC90ZXh0Pgo8L3N2Zz4K" 
-                                alt="File" 
-                                width="20" 
-                                height="30" 
-                                loading="lazy"
-                                style="border-radius: 6px; border: 2px solid #b7a7ff; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <i class="fas fa-file-csv" style="font-size: 1.5rem; color: #28a745;"></i>
                             <div class="file-details">
                                 <span class="file-name" id="fileName"></span>
                                 <span class="file-size" id="fileSize"></span>
@@ -786,7 +893,15 @@
 
                     <div class="visualization">
                         <div class="chart-container">
-                            <canvas id="sentimentChart"></canvas>
+                            <div class="chart-wrapper">
+                                <canvas id="sentimentChart" style="display: none;"></canvas>
+                                <div id="noDataMessage" class="no-data-message">
+                                    <i class="fas fa-chart-pie"></i>
+                                    <p>Нет данных для отображения</p>
+                                </div>
+                            </div>
+                            <div class="chart-legend" id="chartLegend" style="display: none;">
+                            </div>
                         </div>
                         <div class="confidence-stats">
                             <h4>Статистика уверенности</h4>
@@ -848,43 +963,18 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
     class CSVAnalyzer {
         constructor() {
             this.currentFile = null;
             this.analysisResults = null;
-            this.API_BASE = 'https://sentiment-analyzer-pnla.onrender.com';
+            this.API_BASE = 'http://localhost:8000';
+            this.chart = null;
             
             this.initializeEventListeners();
             this.setupResizeHandler();
-            this.preventLayoutShifts();
-        }
-
-        preventLayoutShifts() {
-            // Ждем загрузки шрифтов
-            document.fonts.ready.then(() => {
-                console.log('Шрифты загружены');
-            }).catch(() => {
-                console.log('Шрифты не загрузились, используем системные');
-            });
-
-            // Ждем загрузки критических изображений
-            const criticalImages = document.querySelectorAll('.rainbow-icon img');
-            Promise.all(
-                Array.from(criticalImages).map(img => {
-                    if (img.complete) return Promise.resolve();
-                    return new Promise(resolve => {
-                        img.onload = img.onerror = resolve;
-                    });
-                })
-            ).then(() => {
-                console.log('Критические изображения загружены');
-            });
-
-            // Показываем контент после небольшой задержки
-            setTimeout(() => {
-                document.getElementById('mainContent').classList.add('content-loaded');
-            }, 100);
+            this.initializeChart();
         }
 
         initializeEventListeners() {
@@ -920,9 +1010,201 @@
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
-                    this.updateChartSize();
+                    if (this.chart) {
+                        this.chart.resize();
+                    }
                 }, 250);
             });
+        }
+
+        createChart() {
+            console.log('🎯 Создаем диаграмму с ML данными...');
+            const canvas = document.getElementById('sentimentChart');
+            if (!canvas) {
+                console.error('❌ Canvas element not found');
+                return;
+            }
+            
+            try {
+                // Получаем реальные данные от ML
+                const distribution = this.getMLDistribution();
+                console.log('📊 Данные для диаграммы:', distribution);
+                
+                // Проверяем что есть данные
+                const total = distribution.positive + distribution.negative + distribution.neutral;
+                if (total === 0) {
+                    throw new Error('Нет данных для отображения');
+                }
+                
+                this.drawMLChart(canvas, distribution);
+                console.log('✅ Диаграмма успешно создана!');
+                
+            } catch (error) {
+                console.error('❌ Ошибка создания диаграммы:', error);
+                this.showChartError(canvas, error.message);
+            }
+        }
+
+        getMLDistribution() {
+            console.log('🔍 Ищем ML данные:', this.analysisResults);
+            
+            // Пробуем все возможные форматы данных от ML
+            if (this.analysisResults?.statistics?.sentiment_distribution) {
+                console.log('✅ Нашли данные в statistics.sentiment_distribution');
+                return this.analysisResults.statistics.sentiment_distribution;
+            }
+            
+            if (this.analysisResults?.sentiment_distribution) {
+                console.log('✅ Нашли данные в sentiment_distribution');
+                return this.analysisResults.sentiment_distribution;
+            }
+            
+            // Если данные в preview, считаем вручную
+            if (this.analysisResults?.preview && Array.isArray(this.analysisResults.preview)) {
+                console.log('✅ Считаем данные из preview');
+                const distribution = { positive: 0, negative: 0, neutral: 0 };
+                
+                this.analysisResults.preview.forEach((item, index) => {
+                    const sentiment = item.sentiment_label || item.sentiment;
+                    console.log(`📝 Запись ${index}:`, sentiment);
+                    
+                    if (sentiment === 'positive' || sentiment === 2 || sentiment === '2') {
+                        distribution.positive++;
+                    } else if (sentiment === 'negative' || sentiment === 0 || sentiment === '0') {
+                        distribution.negative++;
+                    } else {
+                        distribution.neutral++;
+                    }
+                });
+                
+                console.log('📊 Итоговое распределение:', distribution);
+                return distribution;
+            }
+            
+            // Если данные в корне объекта
+            if (this.analysisResults.positive !== undefined || this.analysisResults.negative !== undefined || this.analysisResults.neutral !== undefined) {
+                console.log('✅ Нашли данные в корне объекта');
+                return {
+                    positive: this.analysisResults.positive || 0,
+                    negative: this.analysisResults.negative || 0,
+                    neutral: this.analysisResults.neutral || 0
+                };
+            }
+            
+            console.error('❌ Не удалось найти данные распределения sentiment в ML ответе');
+            throw new Error('ML не вернул данные для диаграммы');
+        }
+
+        drawMLChart(canvas, distribution) {
+            const ctx = canvas.getContext('2d');
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+  
+            canvas.width = width;
+            canvas.height = height;
+            ctx.clearRect(0, 0, width, height);
+            
+            const total = distribution.positive + distribution.negative + distribution.neutral;
+            
+            // если нет данных - показываем ошибку
+            if (total === 0) {
+                this.showChartError(canvas, 'Нет данных для отображения');
+                return;
+            }
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const radius = Math.min(width, height) * 0.35;
+
+            const segments = [
+                { 
+                    value: distribution.positive, 
+                    color: '#28a745', 
+                    label: 'Позитивные',
+                    icon: '😊'
+                },
+                { 
+                    value: distribution.negative, 
+                    color: '#dc3545', 
+                    label: 'Негативные',
+                    icon: '😞'
+                },
+                { 
+                    value: distribution.neutral, 
+                    color: '#ffc107', 
+                    label: 'Нейтральные',
+                    icon: '😐'
+                }
+            ];
+            
+            let startAngle = -Math.PI / 2;
+
+            segments.forEach(segment => {
+                if (segment.value === 0) return;
+                
+                const sliceAngle = (segment.value / total) * 2 * Math.PI;
+                const endAngle = startAngle + sliceAngle;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = segment.color;
+                ctx.fill();
+
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                startAngle = endAngle;
+            });
+
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.strokeStyle = '#e9ecef';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`Всего: ${total}`, centerX, centerY);
+
+            this.drawLegend(ctx, segments, total, width, height);
+        }
+
+        showChartError(canvas, message) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.parentElement.clientWidth;
+            const height = canvas.parentElement.clientHeight;
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.fillStyle = '#dc3545';
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('❌ ' + message, width / 2, height / 2);
+            
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Inter';
+            ctx.fillText('Проверьте данные ML модели', width / 2, height / 2 + 25);
+        }
+
+        updateChartSize() {
+            if (this.analysisResults) {
+                const canvas = document.getElementById('sentimentChart');
+                if (canvas) {
+                    const distribution = this.getMLDistribution();
+                    this.drawMLChart(canvas, distribution);
+                }
+            }
         }
 
         handleFileSelect(event) {
@@ -998,48 +1280,37 @@
             this.showLoading(true);
             
             try {
-                // Упрощенная имитация прогресса
+                // имитация прогресса с разными этапами
                 const steps = [
                     { message: 'Чтение CSV файла...', progress: 20 },
-                    { message: 'Анализ тональности...', progress: 50 },
-                    { message: 'Обработка результатов...', progress: 80 }
+                    { message: 'Предобработка текста...', progress: 40 },
+                    { message: 'Анализ тональности...', progress: 60 },
+                    { message: 'Генерация результатов...', progress: 80 },
+                    { message: 'Завершение анализа...', progress: 95 }
                 ];
 
                 for (const step of steps) {
                     this.loadingMessage.textContent = step.message;
                     this.updateProgress(step.progress);
-                    await new Promise(resolve => setTimeout(resolve, 600));
+                    await new Promise(resolve => setTimeout(resolve, 800));
                 }
 
-                // Реальный запрос к API
                 const formData = new FormData();
                 formData.append('file', this.currentFile);
-
-                console.log('Отправка запроса на:', `${this.API_BASE}/api/analyze`);
 
                 const response = await fetch(`${this.API_BASE}/api/analyze`, {
                     method: 'POST',
                     body: formData
                 });
 
-                console.log('Статус ответа:', response.status);
-
                 if (!response.ok) {
-                    let errorMessage = `HTTP error! status: ${response.status}`;
-                    try {
-                        const errorData = await response.json();
-                        errorMessage = errorData.detail || errorMessage;
-                    } catch (e) {
-                        // Не удалось распарсить JSON ошибки
-                    }
-                    throw new Error(errorMessage);
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Ошибка сервера');
                 }
 
                 const data = await response.json();
-                console.log('Данные получены:', data);
-                
-                // Финальный прогресс
-                this.loadingMessage.textContent = '✅ Анализ завершен!';
+
+                this.loadingMessage.textContent = '🎉 Анализ завершен!';
                 this.updateProgress(100);
                 await new Promise(resolve => setTimeout(resolve, 500));
 
@@ -1053,12 +1324,11 @@
             } catch (error) {
                 console.error('Analysis error:', error);
                 
-                // Показываем демо-данные при ошибке сети
-                if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
-                    this.loadingMessage.textContent = '⚠️ Используем демо-данные';
-                    this.updateProgress(100);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    this.showDemoResults();
+                // ПРОСТАЯ ОБРАБОТКА ОШИБОК БЕЗ ДЕМО-ДАННЫХ
+                if (error.message.includes('Failed to fetch')) {
+                    this.showError('Не удалось подключиться к серверу ML. Проверьте подключение и запущен ли бэкенд.');
+                } else if (error.message.includes('Ошибка сервера')) {
+                    this.showError('Сервер ML временно недоступен. Попробуйте позже.');
                 } else {
                     this.showError('Ошибка при анализе файла: ' + error.message);
                 }
@@ -1067,65 +1337,7 @@
             }
         }
 
-        showDemoResults() {
-            // Демо-данные для тестирования
-            this.analysisResults = {
-                success: true,
-                statistics: {
-                    total_samples: 150,
-                    sentiment_distribution: {
-                        positive: 65,
-                        negative: 45,
-                        neutral: 40
-                    },
-                    confidence: {
-                        average: 0.78,
-                        max: 0.95,
-                        min: 0.45
-                    }
-                },
-                preview: [
-                    {
-                        text: "Отличный продукт, очень доволен покупкой!",
-                        sentiment_label: "positive",
-                        sentiment_display: "Позитивный",
-                        confidence: 0.92,
-                        sentiment: 1
-                    },
-                    {
-                        text: "Качество оставляет желать лучшего, не рекомендую",
-                        sentiment_label: "negative",
-                        sentiment_display: "Негативный",
-                        confidence: 0.87,
-                        sentiment: -1
-                    },
-                    {
-                        text: "Нормальный товар, соответствует описанию",
-                        sentiment_label: "neutral",
-                        sentiment_display: "Нейтральный",
-                        confidence: 0.65,
-                        sentiment: 0
-                    },
-                    {
-                        text: "Прекрасное обслуживание, буду рекомендовать друзьям!",
-                        sentiment_label: "positive",
-                        sentiment_display: "Позитивный",
-                        confidence: 0.89,
-                        sentiment: 1
-                    },
-                    {
-                        text: "Разочарован качеством, ожидал большего",
-                        sentiment_label: "negative",
-                        sentiment_display: "Негативный",
-                        confidence: 0.76,
-                        sentiment: -1
-                    }
-                ],
-                results_csv: "text,sentiment,confidence\nОтличный продукт, очень доволен покупкой!,1,0.92\nКачество оставляет желать лучшего, не рекомендую,-1,0.87\nНормальный товар, соответствует описанию,0,0.65"
-            };
-
-            this.showResults();
-        }
+       
 
         updateProgress(percentage) {
             this.progressFill.style.width = percentage + '%';
@@ -1134,150 +1346,117 @@
 
         showResults() {
             this.updateStatistics();
+            this.createChart();  
             this.updatePreviewTable();
             this.resultsSection.style.display = 'block';
-
-            // Небольшая задержка для стабилизации DOM
+            
+            // pлавная прокрутка к результатам
             setTimeout(() => {
-                this.createChart();
                 this.resultsSection.scrollIntoView({ behavior: 'smooth' });
             }, 100);
         }
 
         updateStatistics() {
-            const stats = this.analysisResults.statistics.sentiment_distribution;
-            const confidence = this.analysisResults.statistics.confidence;
-
-            document.getElementById('positiveCount').textContent = stats.positive;
-            document.getElementById('negativeCount').textContent = stats.negative;
-            document.getElementById('neutralCount').textContent = stats.neutral;
-            document.getElementById('totalCount').textContent = this.analysisResults.statistics.total_samples;
-
-            document.getElementById('avgConfidence').textContent = (confidence.average * 100).toFixed(1) + '%';
-            document.getElementById('maxConfidence').textContent = (confidence.max * 100).toFixed(1) + '%';
-            document.getElementById('minConfidence').textContent = (confidence.min * 100).toFixed(1) + '%';
-        }
-
-        createChart() {
-            const canvas = document.getElementById('sentimentChart');
-            if (!canvas) {
-                console.error('Canvas element not found');
-                return;
-            }
-            
-            const distribution = this.analysisResults.statistics.sentiment_distribution;
-            this.createResponsiveChart(canvas, distribution);
-        }
-
-        createResponsiveChart(canvas, distribution) {
-            const ctx = canvas.getContext('2d');
-            
-            // Получаем реальные размеры контейнера
-            const container = canvas.parentElement;
-            const dpr = window.devicePixelRatio || 1;
-            const rect = container.getBoundingClientRect();
-            
-            // Устанавливаем размеры canvas с учетом devicePixelRatio
-            const width = rect.width;
-            const height = rect.height;
-            
-            canvas.width = width * dpr;
-            canvas.height = height * dpr;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            
-            // Масштабируем контекст для четкого отображения на retina-экранах
-            ctx.scale(dpr, dpr);
-            
-            // Очищаем canvas
-            ctx.clearRect(0, 0, width, height);
-            
-            const total = distribution.negative + distribution.neutral + distribution.positive;
-            if (total === 0) {
-                // Если нет данных, показываем сообщение
-                ctx.fillStyle = '#666';
-                ctx.font = '16px Inter, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Нет данных для отображения', width / 2, height / 2);
-                return;
-            }
-            
-            const colors = ['#e74c3c', '#3498db', '#27ae60'];
-            const labels = ['Негативные', 'Нейтральные', 'Позитивные'];
-            const values = [distribution.negative, distribution.neutral, distribution.positive];
-            
-            // Адаптивный размер диаграммы
-            const radius = Math.min(width, height) * 0.3;
-            const centerX = width / 2;
-            const centerY = height / 2;
-            
-            let currentAngle = 0;
-            
-            // Рисуем круговую диаграмму
-            for (let i = 0; i < values.length; i++) {
-                const sliceAngle = (values[i] / total) * 2 * Math.PI;
+            try {
+                const distribution = this.getMLDistribution();
+                const total = distribution.positive + distribution.negative + distribution.neutral;
                 
-                // Сегмент диаграммы
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
-                ctx.closePath();
-                
-                ctx.fillStyle = colors[i];
-                ctx.fill();
-                
-                // Обводка
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                // Подписи
-                const labelAngle = currentAngle + sliceAngle / 2;
-                const labelRadius = radius * 1.2;
-                
-                // Позиционирование текста
-                const labelX = centerX + Math.cos(labelAngle) * labelRadius;
-                const labelY = centerY + Math.sin(labelAngle) * labelRadius;
-                
-                // Адаптивный размер шрифта
-                const baseFontSize = Math.min(width, height) * 0.03;
-                const fontSize = Math.max(10, baseFontSize);
-                
-                ctx.font = `500 ${fontSize}px Inter, sans-serif`;
-                ctx.fillStyle = '#333';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                
-                const percentage = Math.round((values[i] / total) * 100);
-                const labelText = `${values[i]} (${percentage}%)`;
-                
-                // Проверяем, помещается ли текст
-                const textWidth = ctx.measureText(labelText).width;
-                const maxTextWidth = radius * 1.5;
-                
-                if (textWidth <= maxTextWidth) {
-                    ctx.fillText(labelText, labelX, labelY);
-                } else {
-                    // Если текст не помещается, показываем только количество
-                    ctx.fillText(values[i].toString(), labelX, labelY);
+                if (total === 0) {
+                    throw new Error('Нет данных для статистики');
                 }
                 
-                currentAngle += sliceAngle;
+                // Обновляем счетчики
+                document.getElementById('positiveCount').textContent = distribution.positive;
+                document.getElementById('negativeCount').textContent = distribution.negative;
+                document.getElementById('neutralCount').textContent = distribution.neutral;
+                document.getElementById('totalCount').textContent = total;
+
+                let confidence = { average: 0, max: 0, min: 0 };
+                
+                if (this.analysisResults?.statistics?.confidence) {
+                    confidence = this.analysisResults.statistics.confidence;
+                } else if (this.analysisResults?.preview) {
+
+                    const confidences = this.analysisResults.preview
+                        .map(item => item.confidence || 0)
+                        .filter(conf => conf > 0);
+                        
+                    if (confidences.length > 0) {
+                        confidence = {
+                            average: confidences.reduce((a, b) => a + b, 0) / confidences.length,
+                            max: Math.max(...confidences),
+                            min: Math.min(...confidences)
+                        };
+                    }
+                }
+
+                document.getElementById('avgConfidence').textContent = (confidence.average * 100).toFixed(1) + '%';
+                document.getElementById('maxConfidence').textContent = (confidence.max * 100).toFixed(1) + '%';
+                document.getElementById('minConfidence').textContent = (confidence.min * 100).toFixed(1) + '%';
+                
+            } catch (error) {
+                console.error('❌ Ошибка обновления статистики:', error);
+
+                document.getElementById('positiveCount').textContent = '0';
+                document.getElementById('negativeCount').textContent = '0';
+                document.getElementById('neutralCount').textContent = '0';
+                document.getElementById('totalCount').textContent = '0';
+                document.getElementById('avgConfidence').textContent = '0%';
+                document.getElementById('maxConfidence').textContent = '0%';
+                document.getElementById('minConfidence').textContent = '0%';
             }
-            
-            // Центральная подпись
-            ctx.fillStyle = '#333';
-            ctx.font = `bold ${Math.max(12, Math.min(width, height) * 0.025)}px Inter, sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(`Всего: ${total}`, centerX, centerY);
         }
 
-        updateChartSize() {
-            if (this.analysisResults) {
-                this.createChart();
+        updateChart() {
+            if (!this.chart) {
+                this.initializeChart();
             }
+
+            const distribution = this.analysisResults.statistics.sentiment_distribution;
+            const total = distribution.positive + distribution.negative + distribution.neutral;
+            
+            if (total > 0) {
+                this.showChart();
+
+                this.chart.data.datasets[0].data = [
+                    distribution.positive,
+                    distribution.negative,
+                    distribution.neutral
+                ];
+                
+                this.chart.update();
+
+                this.updateChartLegend(distribution, total);
+            } else {
+                this.showNoDataMessage();
+            }
+        }
+
+        updateChartLegend(distribution, total) {
+            const legendContainer = document.getElementById('chartLegend');
+            if (!legendContainer) return;
+
+            const positivePercent = total > 0 ? Math.round((distribution.positive / total) * 100) : 0;
+            const negativePercent = total > 0 ? Math.round((distribution.negative / total) * 100) : 0;
+            const neutralPercent = total > 0 ? Math.round((distribution.neutral / total) * 100) : 0;
+
+            legendContainer.innerHTML = `
+                <div class="legend-item">
+                    <div class="legend-color positive"></div>
+                    <span class="legend-text">Позитивные:</span>
+                    <span class="legend-value">${distribution.positive} (${positivePercent}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color negative"></div>
+                    <span class="legend-text">Негативные:</span>
+                    <span class="legend-value">${distribution.negative} (${negativePercent}%)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color neutral"></div>
+                    <span class="legend-text">Нейтральные:</span>
+                    <span class="legend-value">${distribution.neutral} (${neutralPercent}%)</span>
+                </div>
+            `;
         }
 
         updatePreviewTable() {
@@ -1333,22 +1512,8 @@
             this.analyzeBtn.disabled = true;
             this.resultsSection.style.display = 'none';
             
-            // Очищаем canvas
-            const canvas = document.getElementById('sentimentChart');
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Показываем сообщение об отсутствии данных
-                const container = canvas.parentElement;
-                const rect = container.getBoundingClientRect();
-                
-                ctx.fillStyle = '#666';
-                ctx.font = '16px Inter, sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Загрузите данные для анализа', rect.width / 2, rect.height / 2);
-            }
+            // сбрасываем диаграмму
+            this.showNoDataMessage();
             
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -1365,37 +1530,8 @@
         }
     }
 
-    // Улучшенная инициализация
     document.addEventListener('DOMContentLoaded', () => {
-        // Инициализируем приложение
-        const analyzer = new CSVAnalyzer();
-        
-        // Инициализируем canvas с сообщением по умолчанию
-        const canvas = document.getElementById('sentimentChart');
-        if (canvas) {
-            const container = canvas.parentElement;
-            const rect = container.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-            canvas.style.width = rect.width + 'px';
-            canvas.style.height = rect.height + 'px';
-            
-            const ctx = canvas.getContext('2d');
-            ctx.scale(dpr, dpr);
-            
-            ctx.fillStyle = '#666';
-            ctx.font = '16px Inter, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('Загрузите данные для анализа', rect.width / 2, rect.height / 2);
-        }
-
-        // Fallback на случай проблем с загрузкой
-        setTimeout(() => {
-            document.getElementById('mainContent').classList.add('content-loaded');
-        }, 2000);
+        new CSVAnalyzer();
     });
     </script>
 </body>
