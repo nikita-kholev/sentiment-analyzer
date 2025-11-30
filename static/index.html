@@ -691,7 +691,7 @@
                 <div class="upload-card">
                     <div class="upload-icon">
                         <div class="rainbow-icon">
-                            <img src="шлякашлышла.png" alt="CSV" width="45" height="70" loading="lazy">
+                            <img src="{{ url_for('static', filename='images/шлякашлышла.png') }}" alt="CSV" width="45" height="70" loading="lazy">
                         </div>
                     </div>
                     <h2>Загрузите CSV файл для анализа</h2>
@@ -706,7 +706,7 @@
                             <small>Поддерживаются только CSV файлы</small>
                         </div>
                         <div class="file-info" id="fileInfo" style="display: none;">
-                            <img src="шлякашлышла.png" 
+                            <img src="{{ url_for('static', filename='images/шлякашлышла.png') }}"
                                 alt="File" 
                                 width="20" 
                                 height="30" 
