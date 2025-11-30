@@ -169,7 +169,7 @@ class AdvancedSentimentAnalyzer:
                     random_state=42,
                     class_weight='balanced'
                 ),
-                'naive_bayes': MultinomialNB(alpha=0.1)
+                #'naive_bayes': MultinomialNB()
             }
             
             skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
